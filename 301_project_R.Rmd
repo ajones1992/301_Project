@@ -1,0 +1,48 @@
+---
+title: "301_Project"
+author: "Jones"
+date: "2024-04-19"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(nlme)
+library(multcomp)
+```
+
+```{r}
+# Adjust the data for our needs
+
+pr_waste <- Wastedata2 %>%
+  filter(Year == 1997 | Year == 2007 | Year == 2017) %>%
+  subset(select = -c(Organics, Onsite, WTE, Landfilled))
+pr_waste
+
+```
+
+```{r}
+# Conduct Two-Way Fixed Repeated Measures ANOVA
+
+pr_waste$Year <- as.factor(pr_waste$Year)
+
+waste_mod <- lme(Recycling~Year, random = ~1|County, data = pr_waste)
+anova(waste_mod)
+
+```
+
+```{r}
+# Look at the means by year
+
+pr_wmean <- pr_waste %>%
+  aggregate(by = list(pr_waste$Year), FUN = mean)
+
+ggplot(data=pr_wmean, aes(x=Group.1, y=Recycling, label=Recycling)) + geom_point() + geom_text(hjust=-0.1, vjust=0) + labs(x = "Year", y = "Recycling Weight", title = "Means in Tons")
+
+```
+
